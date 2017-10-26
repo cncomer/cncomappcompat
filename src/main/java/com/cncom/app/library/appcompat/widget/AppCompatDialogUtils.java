@@ -57,50 +57,49 @@ public class AppCompatDialogUtils {
 	public static DialogCallback getDialogCallbackSimpleImpl() {
 		return new DialogCallbackSimpleImpl();
 	}
-	public static void createSimpleConfirmAlertDialog(Context context, String message) {
-		AlertDialog.Builder builder = new AlertDialog.Builder(context)
-		.setMessage(message);
-		builder.setPositiveButton(android.R.string.ok, null);
-		Dialog dialog = builder.create();
-		if (context instanceof Activity) {
-
-		} else {
-			dialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
-		}
-		dialog.show();
+	public static void createSimpleConfirmAlertDialog(Context context, CharSequence message) {
+		createSimpleConfirmAlertDialog(context, null, message);
 	}
+
+	public static void createSimpleConfirmAlertDialog(Context context, CharSequence title, CharSequence message) {
+		createSimpleConfirmAlertDialog(context, title, message, context.getString(android.R.string.ok), null, null);
+	}
+
+	public static void createSimpleConfirmAlertDialog(Context context, CharSequence message, DialogCallback callback) {
+		createSimpleConfirmAlertDialog(context, null, message, context.getString(android.R.string.ok), context.getString(android.R.string.cancel), true, callback);
+	}
+
 	/**
 	 * 创建一个简单的确认对话框
 	 * @param context
 	 * @param message
 	 * @param callback
 	 */
-	public static void createSimpleConfirmAlertDialog(Context context, String message, String positiveButton, String negativeButton, DialogCallback callback) {
-		AlertDialog.Builder builder = new AlertDialog.Builder(context)
-		.setMessage(message);
-		if (positiveButton != null) {
-			builder.setPositiveButton(positiveButton, callback);
-		}
-		if (negativeButton != null) {
-			builder.setNegativeButton(negativeButton, callback);
-		}
-		builder.setOnCancelListener(callback);
-		Dialog dialog = builder.create();
-		if (context instanceof Activity) {
-
-		} else {
-			dialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
-		}
-
-		dialog.show();
+	public static void createSimpleConfirmAlertDialog(Context context, CharSequence message, CharSequence positiveButton, CharSequence negativeButton, DialogCallback callback) {
+		createSimpleConfirmAlertDialog(context, null, message, positiveButton, negativeButton, callback);
 	}
+
+	public static void createSimpleConfirmAlertDialog(Context context, CharSequence title, CharSequence message, DialogCallback callback) {
+		createSimpleConfirmAlertDialog(context, title, message, context.getString(android.R.string.ok), context.getString(android.R.string.cancel), callback);
+	}
+
 	/**
 	 * 创建一个简单的确认对话框
 	 * @param context
 	 * @param message
 	 * @param callback
 	 */
-	public static void createSimpleConfirmAlertDialog(Context context, String title, String message, String positiveButton, String negativeButton, DialogCallback callback) {
+	public static void createSimpleConfirmAlertDialog(Context context, CharSequence title, CharSequence message, CharSequence positiveButton, CharSequence negativeButton, DialogCallback callback) {
+		createSimpleConfirmAlertDialog(context, title, message, positiveButton, negativeButton, false, callback);
+	}
+
+	/**
+	 * 创建一个简单的确认对话框
+	 * @param context
+	 * @param message
+	 * @param callback
+	 */
+	public static void createSimpleConfirmAlertDialog(Context context, CharSequence title, CharSequence message, CharSequence positiveButton, CharSequence negativeButton, boolean cancelable, DialogCallback callback) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(context)
 				.setTitle(title)
 				.setMessage(message);
@@ -110,6 +109,7 @@ public class AppCompatDialogUtils {
 		if (negativeButton != null) {
 			builder.setNegativeButton(negativeButton, callback);
 		}
+		builder.setCancelable(cancelable);
 		builder.setOnCancelListener(callback);
 		Dialog dialog = builder.create();
 		if (context instanceof Activity) {
@@ -125,7 +125,11 @@ public class AppCompatDialogUtils {
 		createSimpleConfirmAlertDialog(context, context.getString(messageResId), positiveButton == -1?null:context.getString(positiveButton), negativeButton == -1?null:context.getString(negativeButton), callback);
 	}
 	
-	public static void createSimpleInputDialog(Context context, String inputTitleText, String inputMessageText, EditText inputEdit, String positiveButton, String negativeButton, DialogCallback callback) {
+	public static void createSimpleInputDialog(Context context, CharSequence inputTitleText, CharSequence inputMessageText, EditText inputEdit, CharSequence positiveButton, CharSequence negativeButton, DialogCallback callback) {
+		createSimpleInputDialog(context, inputTitleText, inputMessageText, inputEdit, positiveButton, negativeButton, callback, true);
+	}
+
+	public static void createSimpleInputDialog(Context context, CharSequence inputTitleText, CharSequence inputMessageText, EditText inputEdit, CharSequence positiveButton, CharSequence negativeButton, DialogCallback callback, boolean inputMustNoEmpty) {
 		AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
 		if (!TextUtils.isEmpty(inputTitleText)) {
 			dialogBuilder.setTitle(inputTitleText);
@@ -134,7 +138,7 @@ public class AppCompatDialogUtils {
 			dialogBuilder.setMessage(inputMessageText);
 		}
 		dialogBuilder.setView(inputEdit);
-		
+
 		if (positiveButton != null) {
 			dialogBuilder.setPositiveButton(positiveButton, callback);
 		}
@@ -147,27 +151,32 @@ public class AppCompatDialogUtils {
 		} else {
 			dialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
 		}
-		inputEdit.addTextChangedListener(new TextWatcher() {
 
-			@Override
-			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-				
-			}
+		if (inputMustNoEmpty) {
+			inputEdit.addTextChangedListener(new TextWatcher() {
 
-			@Override
-			public void onTextChanged(CharSequence s, int start, int before, int count) {
-				
-			}
+				@Override
+				public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
-			@Override
-			public void afterTextChanged(Editable s) {
-				dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(s.toString().trim().length() > 0);
-			}
-			
-		});
-		
+				}
+
+				@Override
+				public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+				}
+
+				@Override
+				public void afterTextChanged(Editable s) {
+					dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(s.toString().trim().length() > 0);
+				}
+
+			});
+		}
+
 		dialog.show();
-		dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(inputEdit.getText().toString().trim().length() > 0);
+		if (inputMustNoEmpty) {
+			dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(inputEdit.getText().toString().trim().length() > 0);
+		}
 	}
 
 }
